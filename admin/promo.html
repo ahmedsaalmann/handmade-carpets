@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة الكوبونات | سجاد يدوي</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script>
+    if (localStorage.getItem('admin_auth') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function logout() {
+      localStorage.removeItem('admin_auth');
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="sidebar">
+      <div class="admin-sidebar-header"><h2>🏛️ سجاد يدوي</h2><p>لوحة التحكم</p></div>
+      <nav class="admin-nav">
+        <a href="index.html"><span class="icon">📊</span> الرئيسية</a>
+        <a href="products.html"><span class="icon">🧶</span> المنتجات</a>
+        <a href="orders.html"><span class="icon">📦</span> الطلبات</a>
+        <a href="promo.html" class="active"><span class="icon">🎟️</span> الكوبونات</a>
+        <a href="../index.html"><span class="icon">🌐</span> زيارة الموقع</a>
+        <a href="#" onclick="logout()" style="color: var(--red); margin-top: auto;"><span class="icon">🚪</span> تسجيل الخروج</a>
+      </nav>
+    </aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>🎟️ إدارة الكوبونات</h1>
+        <button class="btn btn-gold" onclick="openPromoModal()">+ إضافة كوبون</button>
+      </div>
+      <div class="admin-table-container">
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead><tr><th>كود الخصم</th><th>نسبة الخصم</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead>
+            <tbody id="promo-tbody"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Promo Modal -->
+  <div class="modal-overlay" id="promo-modal">
+    <div class="modal">
+      <div class="modal-header"><h3 id="promo-modal-title">إضافة كوبون جديد</h3><button class="modal-close" onclick="closePromoModal()">✕</button></div>
+      <div class="modal-body">
+        <input type="hidden" id="p-edit-id">
+        <div class="form-group"><label>كود الخصم (مثال: SALE20) *</label><input type="text" id="p-code" style="text-transform: uppercase;"></div>
+        <div class="form-group"><label>نسبة الخصم (%) *</label><input type="number" id="p-discount" min="1" max="100"></div>
+        <div class="form-group">
+          <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+            <input type="checkbox" id="p-active" checked> كود مفعل
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-gold" id="save-btn" onclick="savePromo()">💾 حفظ</button>
+        <button class="btn" onclick="closePromoModal()" style="background:var(--cream-dark);">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <script>
+    async function loadPromos() {
+      const tbody = document.getElementById('promo-tbody');
+      try {
+        const { data, error } = await db.from('promo_codes').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="no-results">لا توجد كوبونات</td></tr>'; return; }
+        tbody.innerHTML = data.map(p => `<tr>
+          <td><strong style="letter-spacing: 1px; color: var(--gold);">${p.code}</strong></td>
+          <td>${p.discount_percentage}%</td>
+          <td><span class="status-badge ${p.is_active ? 'status-delivered' : 'status-cancelled'}">${p.is_active ? 'مفعل' : 'متوقف'}</span></td>
+          <td>${formatDate(p.created_at)}</td>
+          <td>
+            <button class="btn btn-sm btn-gold" onclick='editPromo(${JSON.stringify(p).replace(/'/g,"&#39;")})'>✏️</button>
+            <button class="btn btn-sm btn-red" onclick="deletePromo('${p.id}')">🗑️</button>
+          </td>
+        </tr>`).join('');
+      } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="no-results">خطأ</td></tr>'; console.error(e); }
+    }
+
+    function openPromoModal() {
+      document.getElementById('promo-modal-title').textContent = 'إضافة كوبون جديد';
+      document.getElementById('p-edit-id').value = '';
+      document.getElementById('p-code').value = '';
+      document.getElementById('p-discount').value = '';
+      document.getElementById('p-active').checked = true;
+      document.getElementById('promo-modal').classList.add('show');
+    }
+
+    function closePromoModal() { document.getElementById('promo-modal').classList.remove('show'); }
+
+    function editPromo(p) {
+      document.getElementById('promo-modal-title').textContent = 'تعديل الكوبون';
+      document.getElementById('p-edit-id').value = p.id;
+      document.getElementById('p-code').value = p.code;
+      document.getElementById('p-discount').value = p.discount_percentage;
+      document.getElementById('p-active').checked = p.is_active;
+      document.getElementById('promo-modal').classList.add('show');
+    }
+
+    async function savePromo() {
+      const btn = document.getElementById('save-btn');
+      btn.disabled = true;
+      btn.textContent = '⏳ جاري الحفظ...';
+
+      try {
+        const id = document.getElementById('p-edit-id').value;
+        const code = document.getElementById('p-code').value.trim().toUpperCase();
+        const discount = parseInt(document.getElementById('p-discount').value);
+        const isActive = document.getElementById('p-active').checked;
+
+        if (!code || !discount || discount < 1 || discount > 100) {
+          showToast('يرجى ملء الكود ونسبة الخصم بشكل صحيح', 'error');
+          return;
+        }
+
+        const payload = { code, discount_percentage: discount, is_active: isActive };
+
+        if (id) {
+          const { error } = await db.from('promo_codes').update(payload).eq('id', id);
+          if (error) throw error;
+          showToast('تم التعديل بنجاح');
+        } else {
+          const { error } = await db.from('promo_codes').insert(payload);
+          if (error) throw error;
+          showToast('تمت إضافة الكوبون بنجاح');
+        }
+        closePromoModal();
+        loadPromos();
+      } catch(e) {
+        showToast('خطأ: ' + e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 حفظ';
+      }
+    }
+
+    async function deletePromo(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا الكوبون؟')) return;
+      try {
+        const { error } = await db.from('promo_codes').delete().eq('id', id);
+        if (error) throw error;
+        showToast('تم الحذف');
+        loadPromos();
+      } catch(e) { showToast('خطأ: ' + e.message, 'error'); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPromos);
+  </script>
+</body>
+</html>

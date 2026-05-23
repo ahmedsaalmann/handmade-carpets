@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم | سجاد يدوي</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script>
+    if (localStorage.getItem('admin_auth') !== 'true') {
+      window.location.href = 'login.html';
+    }
+    function logout() {
+      localStorage.removeItem('admin_auth');
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="sidebar">
+      <div class="admin-sidebar-header">
+        <h2>🏛️ سجاد يدوي</h2>
+        <p>لوحة التحكم</p>
+      </div>
+      <nav class="admin-nav">
+        <a href="index.html" class="active"><span class="icon">📊</span> الرئيسية</a>
+        <a href="products.html"><span class="icon">🧶</span> المنتجات</a>
+        <a href="orders.html"><span class="icon">📦</span> الطلبات</a>
+        <a href="promo.html"><span class="icon">🎟️</span> الكوبونات</a>
+        <a href="../index.html"><span class="icon">🌐</span> زيارة الموقع</a>
+        <a href="#" onclick="logout()" style="color: var(--red); margin-top: auto;"><span class="icon">🚪</span> تسجيل الخروج</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>📊 نظرة عامة</h1>
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none;">☰</button>
+      </div>
+
+      <div class="stats-grid" id="stats">
+        <div class="stat-card"><div class="stat-icon">🧶</div><div class="stat-info"><h3 id="s-products">-</h3><p>إجمالي المنتجات</p></div></div>
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-info"><h3 id="s-orders">-</h3><p>إجمالي الطلبات</p></div></div>
+        <div class="stat-card"><div class="stat-icon">🚚</div><div class="stat-info"><h3 id="s-shipped">-</h3><p>تم شحنها</p></div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-info"><h3 id="s-delivered">-</h3><p>تم التوصيل</p></div></div>
+      </div>
+
+      <div class="admin-table-container">
+        <div class="admin-table-header">
+          <h2>آخر الطلبات</h2>
+          <a href="orders.html" class="btn btn-gold btn-sm">عرض الكل</a>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead><tr><th>رقم التتبع</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+            <tbody id="recent-orders"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const [prodRes, ordRes, shipRes, delRes] = await Promise.all([
+          db.from('products').select('id', { count: 'exact', head: true }),
+          db.from('orders').select('id', { count: 'exact', head: true }),
+          db.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'shipped'),
+          db.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'delivered')
+        ]);
+        document.getElementById('s-products').textContent = prodRes.count || 0;
+        document.getElementById('s-orders').textContent = ordRes.count || 0;
+        document.getElementById('s-shipped').textContent = shipRes.count || 0;
+        document.getElementById('s-delivered').textContent = delRes.count || 0;
+      } catch(e) { console.error(e); }
+
+      try {
+        const { data } = await db.from('orders').select('*').order('created_at', { ascending: false }).limit(5);
+        const tbody = document.getElementById('recent-orders');
+        if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="no-results">لا توجد طلبات</td></tr>'; return; }
+        tbody.innerHTML = data.map(o => `<tr>
+          <td><strong>${o.tracking_number}</strong></td>
+          <td>${o.customer_name}</td>
+          <td>${formatPrice(o.total_price)}</td>
+          <td><span class="status-badge status-${o.status}">${getStatusLabel(o.status)}</span></td>
+          <td>${formatDate(o.created_at)}</td>
+        </tr>`).join('');
+      } catch(e) { console.error(e); }
+    });
+  </script>
+</body>
+</html>

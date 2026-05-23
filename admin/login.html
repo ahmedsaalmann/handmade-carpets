@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول | لوحة التحكم</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    body { background-color: var(--cream); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-container { background: white; padding: 2.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); width: 100%; max-width: 400px; text-align: center; }
+    .login-container h1 { color: var(--gold); margin-bottom: 0.5rem; }
+    .login-container p { color: var(--text-light); margin-bottom: 2rem; }
+    .login-container .form-group { text-align: right; }
+    .login-container input { width: 100%; padding: 0.8rem; border: 1px solid var(--cream-dark); border-radius: var(--radius-sm); margin-bottom: 1.5rem; font-size: 1.1rem; }
+    .login-container button { width: 100%; padding: 1rem; font-size: 1.1rem; }
+    .error-msg { color: var(--red); font-size: 0.9rem; margin-top: -1rem; margin-bottom: 1rem; display: none; text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>🏛️ سجاد يدوي</h1>
+    <p>لوحة تحكم الإدارة</p>
+    
+    <div class="form-group">
+      <label>كلمة المرور</label>
+      <input type="password" id="password" placeholder="أدخل كلمة المرور" onkeypress="if(event.key === 'Enter') login()">
+    </div>
+    <div id="error-msg" class="error-msg">كلمة المرور غير صحيحة!</div>
+    
+    <button class="btn btn-gold" onclick="login()">تسجيل الدخول</button>
+    
+    <div style="margin-top: 1.5rem;">
+      <a href="../index.html" style="color: var(--gold); text-decoration: none; font-size: 0.9rem;">العودة للموقع</a>
+    </div>
+  </div>
+
+  <script>
+    // Check if already logged in
+    if (localStorage.getItem('admin_auth') === 'true') {
+      window.location.href = 'index.html';
+    }
+
+    function login() {
+      const pwd = document.getElementById('password').value;
+      if (pwd === '123321123') {
+        localStorage.setItem('admin_auth', 'true');
+        window.location.href = 'index.html';
+      } else {
+        document.getElementById('error-msg').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

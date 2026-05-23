@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="تتبع حالة طلبك من سجاد يدوي">
+  <title>تتبع الطلب | سجاد يدوي</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">🏛️ سجاد <span>يدوي</span></a>
+      <div class="nav-links">
+        <a href="index.html">الرئيسية</a>
+        <a href="products.html">المنتجات</a>
+        <a href="track.html" class="active">تتبع طلبك</a>
+        <a href="admin/index.html" class="nav-cta">لوحة التحكم</a>
+      </div>
+      <button class="menu-toggle">☰</button>
+    </div>
+  </nav>
+
+  <section class="track-section">
+    <div class="track-container">
+      <div class="track-form">
+        <h2>📦 تتبع طلبك</h2>
+        <p>أدخل رقم التتبع الخاص بطلبك لمعرفة حالته الحالية</p>
+        <div class="input-group">
+          <input type="text" id="tracking-input" placeholder="مثال: TRK-2024-001" autocomplete="off">
+          <button onclick="trackOrder()">تتبع</button>
+        </div>
+      </div>
+
+      <div class="order-result" id="order-result">
+        <div class="order-info-row"><span class="label">رقم التتبع</span><span class="value" id="r-tracking"></span></div>
+        <div class="order-info-row"><span class="label">اسم العميل</span><span class="value" id="r-name"></span></div>
+        <div class="order-info-row"><span class="label">المنتج</span><span class="value" id="r-product"></span></div>
+        <div class="order-info-row"><span class="label">المبلغ</span><span class="value" id="r-price"></span></div>
+        <div class="order-info-row"><span class="label">تاريخ الطلب</span><span class="value" id="r-date"></span></div>
+        <div class="order-info-row">
+          <span class="label">الحالة</span>
+          <span class="value"><span id="r-status" class="status-badge"></span></span>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <div id="error-box" style="display:none; margin-top:1rem; background:#FFEBEE; color:#C62828; padding:1rem; border-radius:8px; text-align:center; font-weight:600;"></div>
+    </div>
+  </section>
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/201025145960" target="_blank" class="whatsapp-float" aria-label="تواصل معنا عبر واتساب">
+    <svg viewBox="0 0 32 32" width="35" height="35" fill="currentColor" style="display:block; margin:auto;"><path d="M16 2.3A13.7 13.7 0 0 0 2.3 16c0 2.4.6 4.7 1.8 6.7L2 29.5l7-1.8a13.7 13.7 0 1 0 7-25.4zm7.9 19.5c-.3 1-1.8 1.8-2.6 1.9-.8.1-1.7.3-5-1-4-1.7-6.5-5.9-6.7-6.2-.2-.2-1.6-2.1-1.6-4 0-1.9 1-2.9 1.4-3.3.3-.4.8-.4 1.1-.4h.8c.3 0 .7-.1 1 .6.4.9 1 2.3 1 2.5.1.2.2.4.1.7-.1.2-.2.3-.4.5-.2.2-.4.4-.5.5-.2.2-.4.4-.1.8.2.5.8 1.4 1.5 2 1 1 1.9 1.2 2.3 1.4.4.2.7.2.9-.1.3-.3.7-.9 1-1.2.2-.3.5-.2.8-.1.3.1 1.8.9 2.1 1 .3.2.5.3.6.4.1.3.1 1.4-.2 2.4z"/></svg>
+  </a>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-col"><h3>🏛️ سجاد يدوي</h3><p>أجود أنواع السجاد اليدوي</p></div>
+      <div class="footer-col"><h3>روابط</h3><a href="index.html">الرئيسية</a><a href="products.html">المنتجات</a></div>
+      <div class="footer-col"><h3>تواصل معنا</h3><p>📞 01012345678</p></div>
+    </div>
+    <div class="footer-bottom"><p>© 2024 سجاد يدوي. جميع الحقوق محفوظة.</p></div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script>
+    const steps = [
+      { key: 'pending', label: 'قيد المراجعة', desc: 'تم استلام طلبك بنجاح' },
+      { key: 'processing', label: 'قيد التجهيز', desc: 'يتم تجهيز طلبك الآن' },
+      { key: 'shipped', label: 'تم الشحن', desc: 'طلبك في الطريق إليك' },
+      { key: 'delivered', label: 'تم التوصيل', desc: 'تم تسليم طلبك بنجاح' }
+    ];
+
+    document.getElementById('tracking-input').addEventListener('keypress', e => { if (e.key === 'Enter') trackOrder(); });
+
+    async function trackOrder() {
+      const num = document.getElementById('tracking-input').value.trim();
+      const result = document.getElementById('order-result');
+      const errorBox = document.getElementById('error-box');
+      result.classList.remove('show');
+      errorBox.style.display = 'none';
+
+      if (!num) { errorBox.textContent = 'يرجى إدخال رقم التتبع'; errorBox.style.display = 'block'; return; }
+
+      try {
+        const { data, error } = await db.from('orders').select('*, products(name)').eq('tracking_number', num).single();
+        if (error || !data) { errorBox.textContent = 'لم يتم العثور على طلب بهذا الرقم'; errorBox.style.display = 'block'; return; }
+
+        document.getElementById('r-tracking').textContent = data.tracking_number;
+        document.getElementById('r-name').textContent = data.customer_name;
+        document.getElementById('r-product').textContent = data.products?.name || '-';
+        document.getElementById('r-price').textContent = formatPrice(data.total_price);
+        document.getElementById('r-date').textContent = formatDate(data.created_at);
+
+        const statusEl = document.getElementById('r-status');
+        statusEl.textContent = getStatusLabel(data.status);
+        statusEl.className = `status-badge status-${data.status}`;
+
+        // Build timeline
+        const currentIdx = steps.findIndex(s => s.key === data.status);
+        const cancelledIdx = data.status === 'cancelled' ? -1 : currentIdx;
+        document.getElementById('timeline').innerHTML = data.status === 'cancelled'
+          ? '<div style="text-align:center;color:var(--danger);font-weight:700;padding:1rem;">❌ تم إلغاء هذا الطلب</div>'
+          : steps.map((s, i) => `
+            <div class="timeline-step ${i < currentIdx ? 'active' : ''} ${i === currentIdx ? 'current' : ''}">
+              <div class="timeline-dot"></div>
+              <h4>${s.label}</h4>
+              <p>${s.desc}</p>
+            </div>
+          `).join('');
+
+        result.classList.add('show');
+      } catch (e) {
+        errorBox.textContent = 'حدث خطأ، يرجى المحاولة مرة أخرى';
+        errorBox.style.display = 'block';
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>

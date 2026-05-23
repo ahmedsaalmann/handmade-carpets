@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="سجاد يدوي فاخر - أجود أنواع السجاد المصنوع يدوياً بأيدي حرفيين مهرة">
+  <title>سجاد يدوي | تحف فنية لبيتك</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">🏛️ سجاد <span>يدوي</span></a>
+      <div class="nav-links">
+        <a href="index.html" class="active">الرئيسية</a>
+        <a href="products.html">المنتجات</a>
+        <a href="track.html">تتبع طلبك</a>
+        <a href="admin/index.html" class="nav-cta">لوحة التحكم</a>
+        <a href="#" onclick="toggleCart()" style="font-size: 1.5rem; text-decoration: none; margin-right: 1rem; position: relative;">
+          🛒 <span id="cart-count" style="position: absolute; top: -5px; right: -10px; background: var(--red); color: white; border-radius: 50%; padding: 0.1rem 0.4rem; font-size: 0.8rem; font-weight: bold;">0</span>
+        </a>
+      </div>
+      <button class="menu-toggle">☰</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">✨ صناعة يدوية أصيلة</span>
+      <h1>تحف فنية <span class="highlight">تُنسج</span> بأيدي حرفيين مهرة</h1>
+      <p>اكتشف مجموعتنا الفريدة من السجاد اليدوي الفاخر، كل قطعة تحكي قصة من التراث والإبداع</p>
+      <div class="hero-buttons">
+        <a href="products.html" class="btn-primary">🛒 تصفح المنتجات</a>
+        <a href="track.html" class="btn-outline">📦 تتبع طلبك</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section">
+    <div class="section-header">
+      <h2>لماذا نحن؟</h2>
+      <p>نقدم لك تجربة فريدة في عالم السجاد اليدوي</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🧵</div>
+        <h3>صناعة يدوية 100%</h3>
+        <p>كل قطعة مصنوعة يدوياً بالكامل من قبل حرفيين ذوي خبرة عالية</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌿</div>
+        <h3>خامات طبيعية</h3>
+        <p>نستخدم أجود أنواع الصوف والحرير والقطن الطبيعي</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3>تصاميم فريدة</h3>
+        <p>تصاميم مستوحاة من التراث الشرقي العريق بلمسة عصرية</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚚</div>
+        <h3>شحن وتتبع</h3>
+        <p>خدمة شحن سريعة مع إمكانية تتبع طلبك خطوة بخطوة</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="section" style="background: var(--white);">
+    <div class="section-header">
+      <h2>أحدث المنتجات</h2>
+      <p>اكتشف آخر ما أضفناه لمجموعتنا</p>
+    </div>
+    <div class="products-grid" id="featured-products">
+      <div class="loading"><div class="spinner"></div><p>جاري تحميل المنتجات...</p></div>
+    </div>
+    <div style="text-align:center; margin-top:2rem;">
+      <a href="products.html" class="btn btn-gold" style="padding: 0.8rem 2rem; font-size: 1rem;">عرض جميع المنتجات ←</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-col">
+        <h3>🏛️ سجاد يدوي</h3>
+        <p>نقدم أجود أنواع السجاد اليدوي المصنوع بحب وإتقان من حرفيين مهرة.</p>
+      </div>
+      <div class="footer-col">
+        <h3>روابط سريعة</h3>
+        <a href="index.html">الرئيسية</a>
+        <a href="products.html">المنتجات</a>
+        <a href="track.html">تتبع طلبك</a>
+      </div>
+      <div class="footer-col">
+        <h3>تواصل معنا</h3>
+        <p>📞 01012345678</p>
+        <p>📧 info@handmade-carpets.com</p>
+        <p>📍 القاهرة، مصر</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024 سجاد يدوي. جميع الحقوق محفوظة.</p>
+    </div>
+  </footer>
+
+  <!-- Cart Drawer -->
+  <div id="cart-drawer" class="cart-drawer">
+    <div class="cart-header">
+      <h3>سلة المشتريات</h3>
+      <button class="cart-close" onclick="closeCart()">✕</button>
+    </div>
+    <div id="cart-items" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="promo-section">
+        <input type="text" id="promo-input" placeholder="كود الخصم (إن وجد)">
+        <button type="button" onclick="applyPromo()">تطبيق</button>
+      </div>
+      <div id="promo-msg" class="promo-message"></div>
+      <div class="discount-row" id="discount-row" style="display:none;"><span>الخصم:</span><span id="discount-amount">0 ج.م</span></div>
+      <div class="cart-total-row"><span>الإجمالي:</span><span id="cart-total">0 ج.م</span></div>
+      <form class="checkout-form" onsubmit="submitCheckout(event)">
+        <input type="text" id="c-name" placeholder="الاسم بالكامل" required>
+        <input type="tel" id="c-phone" placeholder="رقم الهاتف" required>
+        <input type="text" id="c-address" placeholder="عنوان التوصيل تفصيلاً" required>
+        <textarea id="c-notes" placeholder="ملاحظات إضافية (اختياري)" rows="2"></textarea>
+        <button type="submit" id="checkout-btn" class="checkout-btn">إتمام الطلب</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/201025145960" target="_blank" class="whatsapp-float" aria-label="تواصل معنا عبر واتساب">
+    <svg viewBox="0 0 32 32" width="35" height="35" fill="currentColor" style="display:block; margin:auto;"><path d="M16 2.3A13.7 13.7 0 0 0 2.3 16c0 2.4.6 4.7 1.8 6.7L2 29.5l7-1.8a13.7 13.7 0 1 0 7-25.4zm7.9 19.5c-.3 1-1.8 1.8-2.6 1.9-.8.1-1.7.3-5-1-4-1.7-6.5-5.9-6.7-6.2-.2-.2-1.6-2.1-1.6-4 0-1.9 1-2.9 1.4-3.3.3-.4.8-.4 1.1-.4h.8c.3 0 .7-.1 1 .6.4.9 1 2.3 1 2.5.1.2.2.4.1.7-.1.2-.2.3-.4.5-.2.2-.4.4-.5.5-.2.2-.4.4-.1.8.2.5.8 1.4 1.5 2 1 1 1.9 1.2 2.3 1.4.4.2.7.2.9-.1.3-.3.7-.9 1-1.2.2-.3.5-.2.8-.1.3.1 1.8.9 2.1 1 .3.2.5.3.6.4.1.3.1 1.4-.2 2.4z"/></svg>
+  </a>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('featured-products');
+      try {
+        const { data, error } = await db.from('products').select('*').eq('is_available', true).order('created_at', { ascending: false }).limit(3);
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="no-results"><div class="icon">📦</div><p>لا توجد منتجات حالياً</p></div>';
+          return;
+        }
+        container.innerHTML = data.map(p => `
+          <div class="product-card">
+            <div class="product-image">
+              <img src="${p.image_url || 'https://images.unsplash.com/photo-1600166898405-da9535204843?w=600'}" alt="${p.name}" loading="lazy">
+              <span class="product-badge">${p.category || 'كلاسيكي'}</span>
+            </div>
+            <div class="product-info">
+              <h3>${p.name}</h3>
+              <div class="product-meta">
+                <span>📐 ${p.dimensions || '-'}</span>
+                <span>🧶 ${p.material || '-'}</span>
+              </div>
+              <div class="product-price">
+                ${formatPrice(p.price)}
+                <span>شامل الضريبة</span>
+              </div>
+              <button class="btn btn-gold" style="width: 100%; margin-top: 1rem;" onclick="addToCart('${p.id}', '${p.name.replace(/'/g,"\\'").replace(/"/g,"&quot;")}', ${p.price}, '${p.image_url}')">🛒 أضف إلى السلة</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = '<div class="no-results"><div class="icon">⚠️</div><p>حدث خطأ في تحميل المنتجات</p></div>';
+        console.error(e);
+      }
+    });
+  </script>
+</body>
+</html>
